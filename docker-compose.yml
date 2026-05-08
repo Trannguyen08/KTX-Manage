@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ktx-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ktx_manage
+      POSTGRES_USER: ktx_user
+      POSTGRES_PASSWORD: ktx_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ktx_user -d ktx_manage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: ktx-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ktx.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: ktx-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.example
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ktx-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:8000/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:
+  pgadmin_data:

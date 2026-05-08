@@ -1,0 +1,111 @@
+:root {
+  background: #f5f7fb;
+  color: #0f172a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: #f5f7fb;
+}
+
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    linear-gradient(180deg, rgb(248 250 252 / 92%), rgb(241 245 249 / 96%)),
+    url("https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1600&q=70") center/cover;
+}
+
+.login-card {
+  width: min(100%, 390px);
+}
+
+.admin-layout {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1rem 0.75rem;
+  color: #cbd5e1;
+  background: #0b1b3d;
+}
+
+.sidebar-link {
+  color: #cbd5e1;
+  border: 0;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  color: #fff;
+  background: #0d6efd;
+}
+
+.brand-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 0.5rem;
+  color: #fff;
+  background: #0d6efd;
+}
+
+.topbar {
+  min-height: 64px;
+}
+
+.topbar-search {
+  max-width: 460px;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.modal {
+  background: rgb(15 23 42 / 42%);
+}
+
+.modal-backdrop {
+  z-index: -1;
+}
+
+.table th,
+.table td {
+  white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+  }
+
+  .sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .sidebar nav {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-search {
+    max-width: none;
+  }
+}
