@@ -1,6 +1,36 @@
 import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { STUDENT_CODE_PATTERN, VN_PHONE_PATTERN, adultMaxBirthDate, blockInvalidNumberKey } from "../utils/validation.js";
+
+const fieldRules = {
+  email: { type: "email" },
+  phone: { type: "tel", inputMode: "tel", pattern: VN_PHONE_PATTERN, title: "Số điện thoại VN, ví dụ 0912345678 hoặc +84912345678" },
+  date_of_birth: { type: "date", max: adultMaxBirthDate(), title: "Ngày sinh phải đủ từ 18 tuổi trở lên" },
+  registered_at: { type: "date" },
+  expiry_date: { type: "date" },
+  due_date: { type: "date", min: new Date().toISOString().slice(0, 10) },
+  student_code: { pattern: STUDENT_CODE_PATTERN, title: "MSSV dài 4-30 ký tự, chỉ gồm chữ, số, dấu chấm, gạch dưới hoặc gạch ngang" },
+  month: { type: "number", min: 1, max: 12, step: 1 },
+  year: { type: "number", min: 2000, step: 1 },
+  floor: { type: "number", min: 1, step: 1 },
+  room: { type: "number", min: 1, step: 1 },
+  student: { type: "number", min: 1, step: 1 },
+  capacity: { type: "number", min: 1, step: 1 },
+  current_occupancy: { type: "number", min: 0, step: 1 },
+  monthly_price: { type: "number", min: 0, step: 1000 },
+  price: { type: "number", min: 0, step: 1000 },
+  electricity_reading: { type: "number", min: 0, step: 0.1 },
+  water_reading: { type: "number", min: 0, step: 0.1 },
+};
+
+function inputRulesFor(key) {
+  if (fieldRules[key]) return fieldRules[key];
+  if (key.includes("date")) return { type: "date" };
+  if (key.endsWith("_id") || key.includes("count")) return { type: "number", min: 0, step: 1 };
+  return { type: "text" };
+}
+
 function CrudModal({ title, fields, item, onClose, onSave }) {
   const [form, setForm] = useState(item ?? {});
 
@@ -33,7 +63,7 @@ function CrudModal({ title, fields, item, onClose, onSave }) {
               {fields.map(([key, label]) => (
                 <div className="col-12 col-md-6" key={key}>
                   <label className="form-label fw-semibold">{label}</label>
-                  {typeof form[key] === "boolean" ? (
+                  {typeof form[key] === "boolean" || key.startsWith("is_") ? (
                     <select
                       className="form-select"
                       value={form[key] ? "true" : "false"}
@@ -45,6 +75,9 @@ function CrudModal({ title, fields, item, onClose, onSave }) {
                   ) : (
                     <input
                       className="form-control"
+                      {...inputRulesFor(key)}
+                      onKeyDown={inputRulesFor(key).type === "number" ? blockInvalidNumberKey : undefined}
+                      required
                       value={form[key] ?? ""}
                       onChange={(event) => setForm({ ...form, [key]: event.target.value })}
                     />

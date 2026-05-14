@@ -20,9 +20,14 @@ function DataTable({ columns, rows, onEdit, onDelete }) {
           <tbody>
             {rows.map((row) => (
               <tr key={row.id}>
-                {columns.map((column) => (
-                  <td key={column.key}>{column.badge ? <StatusBadge value={row[column.key]} /> : String(row[column.key] ?? "")}</td>
-                ))}
+                {columns.map((column) => {
+                  const value = column.key.split(".").reduce((obj, key) => obj?.[key], row);
+                  return (
+                    <td key={column.key}>
+                      {column.badge ? <StatusBadge value={value} /> : String(value ?? "")}
+                    </td>
+                  );
+                })}
                 <td>
                   <div className="d-flex gap-1">
                     <button className="btn btn-light btn-sm" type="button" aria-label="Xem">

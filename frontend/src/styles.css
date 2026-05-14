@@ -85,6 +85,236 @@ body {
   white-space: nowrap;
 }
 
+.registration-shell {
+  display: grid;
+  min-height: calc(100vh - 112px);
+  place-items: start center;
+}
+
+.registration-card {
+  width: min(100%, 980px);
+  overflow: hidden;
+}
+
+.registration-header {
+  padding: 1.25rem 1.5rem;
+  background: #0b1b3d;
+}
+
+.registration-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.registration-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(255 255 255 / 45%);
+  font-weight: 700;
+}
+
+.registration-progress-item span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 12%);
+  font-size: 0.78rem;
+}
+
+.registration-progress-item.active {
+  color: #fff;
+}
+
+.registration-progress-item.active span {
+  background: #0d6efd;
+}
+
+.upload-box {
+  display: grid;
+  min-height: 126px;
+  place-items: center;
+  align-content: center;
+  gap: 0.25rem;
+  border: 1px dashed #b8c4d6;
+  border-radius: 0.5rem;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.room-selection {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  background: #f1f5f9;
+}
+
+.room-filter-panel {
+  padding: 1.5rem;
+  border-right: 1px solid #dbe3ee;
+  background: #e9eef6;
+}
+
+.room-list-panel {
+  min-width: 0;
+  padding: 1.5rem;
+}
+
+.room-scroll {
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.bed-btn {
+  display: grid;
+  min-height: 58px;
+  place-items: center;
+}
+
+.registration-footer {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #0b1b3d;
+}
+
+.bill-paper {
+  width: min(100%, 760px);
+  padding: 1.5rem;
+  border: 1px solid #dbe3ee;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(15 23 42 / 8%);
+}
+
+.bill-header,
+.bill-line,
+.bill-total,
+.student-card-top,
+.student-card-body,
+.student-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bill-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.bill-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.bill-section {
+  padding: 1rem 0;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.bill-section-title {
+  margin-bottom: 0.75rem;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bill-line {
+  padding: 0.55rem 0;
+}
+
+.bill-total {
+  padding-top: 1rem;
+  border-top: 2px solid #0f172a;
+  font-size: 1.25rem;
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.profile-info-item {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.profile-info-item span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.student-card-frame {
+  min-height: 250px;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  box-shadow: 0 16px 34px rgb(15 23 42 / 14%);
+}
+
+.student-card-dorm {
+  background: linear-gradient(135deg, #0f4c81, #136f63);
+}
+
+.student-card-parking {
+  background: linear-gradient(135deg, #243b53, #8a4b12);
+}
+
+.utc2-logo {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 72%);
+  border-radius: 50%;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.student-card-body {
+  min-height: 112px;
+}
+
+.student-card-number {
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.student-card-bottom {
+  align-items: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 25%);
+}
+
+.student-card-bottom > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
 @media (max-width: 992px) {
   .admin-layout {
     grid-template-columns: 1fr;
@@ -98,6 +328,20 @@ body {
   .sidebar nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .room-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .room-filter-panel {
+    border-right: 0;
+    border-bottom: 1px solid #dbe3ee;
+  }
+
+  .bill-info-grid,
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 576px) {
@@ -107,5 +351,22 @@ body {
 
   .topbar-search {
     max-width: none;
+  }
+
+  .registration-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bill-header,
+  .bill-line,
+  .bill-total,
+  .student-card-bottom {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

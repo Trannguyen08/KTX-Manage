@@ -11,6 +11,11 @@ class Room(TimestampedModel):
         MAINTENANCE = "maintenance", "Maintenance"
         INACTIVE = "inactive", "Inactive"
 
+    class Gender(models.TextChoices):
+        MALE = "male", "Nam"
+        FEMALE = "female", "Nữ"
+        ALL = "all", "Cả hai"
+
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE, related_name="rooms")
     code = models.CharField(max_length=40, unique=True)
     room_type = models.CharField(max_length=80, default="Standard")
@@ -18,6 +23,7 @@ class Room(TimestampedModel):
     current_occupancy = models.PositiveIntegerField(default=0)
     monthly_price = models.DecimalField(max_digits=12, decimal_places=0, default=0)
     status = models.CharField(max_length=20, choices=RoomStatus.choices, default=RoomStatus.AVAILABLE)
+    gender = models.CharField(max_length=10, choices=Gender.choices, default=Gender.ALL)
     note = models.CharField(max_length=255, blank=True)
 
     class Meta:

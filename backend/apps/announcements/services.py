@@ -1,10 +1,12 @@
+from django.db.models import Count
+
 from .models import Announcement
 
 
 class AnnouncementService:
     @staticmethod
     def queryset():
-        return Announcement.objects.select_related("building")
+        return Announcement.objects.select_related("building").annotate(read_count=Count("reads", distinct=True))
 
     @staticmethod
     def summary():

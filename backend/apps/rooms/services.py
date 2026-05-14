@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Count, Sum, Q
 
 from .models import Room
 
@@ -6,7 +6,9 @@ from .models import Room
 class RoomService:
     @staticmethod
     def queryset():
-        return Room.objects.select_related("floor", "floor__building")
+        return Room.objects.select_related("floor", "floor__building").annotate(
+            active_student_count=Count("students", filter=Q(students__status="active"), distinct=True)
+        )
 
     @staticmethod
     def summary():

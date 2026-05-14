@@ -22,7 +22,7 @@ services:
     container_name: ktx-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@ktx.local
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
       - "5050:80"
@@ -38,7 +38,8 @@ services:
     container_name: ktx-backend
     restart: unless-stopped
     env_file:
-      - ./backend/.env.example
+      - ./backend/.env
+      - ./.env
     ports:
       - "8000:8000"
     volumes:

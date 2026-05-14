@@ -1,6 +1,6 @@
 import { Filter, Search } from "lucide-react";
 
-function FilterToolbar({ placeholder }) {
+function FilterToolbar({ placeholder, value = "", onChange, onSubmit }) {
   return (
     <div className="card border-0 shadow-sm">
       <div className="card-body">
@@ -10,7 +10,7 @@ function FilterToolbar({ placeholder }) {
               <span className="input-group-text bg-white">
                 <Search size={16} />
               </span>
-              <input className="form-control" placeholder={placeholder} />
+              <input className="form-control" placeholder={placeholder} value={value} onChange={(event) => onChange?.(event.target.value)} />
             </div>
           </div>
           <div className="col-12 col-md-4 col-lg-2">
@@ -21,7 +21,7 @@ function FilterToolbar({ placeholder }) {
             </select>
           </div>
           <div className="col-12 col-md-auto">
-            <button className="btn btn-outline-secondary d-inline-flex align-items-center gap-2 w-100">
+            <button className="btn btn-outline-secondary d-inline-flex align-items-center gap-2 w-100" type="button" onClick={onSubmit}>
               <Filter size={16} />
               Lọc dữ liệu
             </button>

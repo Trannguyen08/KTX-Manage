@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { createResourceApi } from "../api/resourceApi.js";
-import { removeItem, saveItem } from "../utils/crud.js";
 
-export function useCrudResource(endpoint, fallbackData) {
+export function useCrudResource(endpoint) {
   const api = useMemo(() => createResourceApi(endpoint), [endpoint]);
-  const [items, setItems] = useState(fallbackData);
+  const [items, setItems] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -17,12 +16,13 @@ export function useCrudResource(endpoint, fallbackData) {
       setLoading(true);
       try {
         const data = await api.list();
-        if (!ignore && Array.isArray(data) && data.length > 0) {
-          setItems(data);
+        if (!ignore) {
+          setItems(Array.isArray(data) ? data : data?.results ?? []);
         }
       } catch (requestError) {
         if (!ignore) {
           setError(requestError.message);
+          setItems([]);
         }
       } finally {
         if (!ignore) {
@@ -38,29 +38,33 @@ export function useCrudResource(endpoint, fallbackData) {
     };
   }, [api]);
 
-  async function save(form) {
+  async function reload() {
+    setLoading(true);
     try {
-      if (form.id) {
-        await api.update(form.id, form);
-      } else {
-        await api.create(form);
-      }
-    } catch {
-      // UI keeps working with local fallback data while the API contract is completed.
+      const data = await api.list();
+      setItems(Array.isArray(data) ? data : data?.results ?? []);
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message);
+      setItems([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    setItems((currentItems) => saveItem(form, currentItems));
+  async function save(form) {
+    const savedItem = form.id ? await api.update(form.id, form) : await api.create(form);
+    setItems((currentItems) =>
+      form.id
+        ? currentItems.map((item) => (item.id === savedItem.id ? savedItem : item))
+        : [savedItem, ...currentItems]
+    );
     setEditingItem(null);
   }
 
   async function remove(id) {
-    try {
-      await api.remove(id);
-    } catch {
-      // Local fallback keeps the screen responsive if backend is offline.
-    }
-
-    setItems((currentItems) => removeItem(id, currentItems));
+    await api.remove(id);
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   }
 
   return {
@@ -71,6 +75,7 @@ export function useCrudResource(endpoint, fallbackData) {
     add: () => setEditingItem({}),
     edit: setEditingItem,
     close: () => setEditingItem(null),
+    reload,
     save,
     remove,
   };

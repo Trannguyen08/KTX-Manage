@@ -1,5 +1,6 @@
-import { Building2, Lock } from "lucide-react";
+import { Building2, ClipboardList, Lock } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { authApi } from "../api/authApi.js";
 
@@ -13,13 +14,12 @@ function LoginPage({ onLogin }) {
 
     try {
       const user = await authApi.login(form);
+      localStorage.setItem("auth_token", user.token);
+      localStorage.setItem("auth_refresh", user.refresh);
       onLogin(user);
-    } catch {
-      onLogin({
-        username: form.username || "admin",
-        full_name: form.role === "admin" ? "Admin Nguyễn" : "Sinh viên",
-        role: form.role,
-      });
+    } catch (err) {
+      setError("Dang nhap that bai. Vui long kiem tra lai tai khoan va mat khau.");
+      console.error(err);
     }
   }
 
@@ -30,33 +30,37 @@ function LoginPage({ onLogin }) {
           <div className="brand-icon mx-auto mb-3">
             <Building2 size={24} />
           </div>
-          <h1 className="h4 fw-bold text-center mb-2">Đăng nhập tài khoản</h1>
-          <p className="text-secondary text-center mb-4">Vui lòng nhập thông tin để tiếp tục hệ thống.</p>
+          <h1 className="h4 fw-bold text-center mb-2">Dang nhap tai khoan</h1>
+          <p className="text-secondary text-center mb-4">Vui long nhap thong tin de tiep tuc he thong.</p>
 
           {error && <div className="alert alert-danger">{error}</div>}
 
           <div className="mb-3">
-            <label className="form-label fw-semibold">Vai trò</label>
+            <label className="form-label fw-semibold">Vai tro</label>
             <select className="form-select" value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}>
-              <option value="admin">Quản trị viên</option>
-              <option value="student">Sinh viên</option>
+              <option value="admin">Quan tri vien</option>
+              <option value="student">Sinh vien</option>
             </select>
           </div>
           <div className="mb-3">
-            <label className="form-label fw-semibold">Email / Mã số</label>
-            <input className="form-control" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} placeholder="admin@ktx.local hoặc MSSV" />
+            <label className="form-label fw-semibold">Email / Ma so</label>
+            <input className="form-control" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} placeholder="admin hoac MSSV" />
           </div>
           <div className="mb-3">
-            <label className="form-label fw-semibold">Mật khẩu</label>
-            <input className="form-control" type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Nhập mật khẩu" />
+            <label className="form-label fw-semibold">Mat khau</label>
+            <input className="form-control" type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Nhap mat khau" />
           </div>
           <button className="btn btn-primary w-100 fw-semibold d-inline-flex align-items-center justify-content-center gap-2" type="submit">
             <Lock size={16} />
-            Đăng nhập
+            Dang nhap
           </button>
           <a className="d-block text-center text-decoration-none fw-semibold small mt-3" href="#forgot">
-            Quên mật khẩu?
+            Quen mat khau?
           </a>
+          <Link className="btn btn-outline-primary w-100 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 mt-3" to="/register">
+            <ClipboardList size={16} />
+            Dang ky ky tuc xa
+          </Link>
         </div>
       </form>
     </main>

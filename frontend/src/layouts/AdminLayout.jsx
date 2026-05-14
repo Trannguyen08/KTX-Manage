@@ -1,8 +1,9 @@
-import { Bell, Building2, LogOut, Search, Settings, UserRound } from "lucide-react";
+import { Building2, LogOut, UserRound } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 import { navigationItems } from "../config/navigation.jsx";
 
-function AdminLayout({ activePage, onNavigate, onLogout, user, children }) {
+function AdminLayout({ onLogout, user, children }) {
   return (
     <div className="admin-layout">
       <aside className="sidebar d-flex flex-column">
@@ -19,26 +20,22 @@ function AdminLayout({ activePage, onNavigate, onLogout, user, children }) {
         <nav className="d-grid gap-1">
           {navigationItems.map((item) => {
             const Icon = item.icon;
-            const active = activePage === item.key;
             return (
-              <button
-                className={`btn sidebar-link justify-content-start d-inline-flex align-items-center gap-2 ${active ? "active" : ""}`}
+              <NavLink
+                className={({ isActive }) =>
+                  `btn sidebar-link justify-content-start d-inline-flex align-items-center gap-2 ${isActive ? "active" : ""}`
+                }
                 key={item.key}
-                onClick={() => onNavigate(item.key)}
-                type="button"
+                to={item.path}
               >
                 <Icon size={18} />
                 {item.label}
-              </button>
+              </NavLink>
             );
           })}
         </nav>
 
         <div className="mt-auto d-grid gap-1">
-          <button className="btn sidebar-link justify-content-start d-inline-flex align-items-center gap-2" type="button">
-            <Settings size={18} />
-            Cài đặt
-          </button>
           <button className="btn sidebar-link justify-content-start d-inline-flex align-items-center gap-2" onClick={onLogout} type="button">
             <LogOut size={18} />
             Đăng xuất
@@ -48,22 +45,10 @@ function AdminLayout({ activePage, onNavigate, onLogout, user, children }) {
 
       <div className="min-w-0">
         <header className="topbar bg-white border-bottom px-4 py-3 d-flex align-items-center gap-3">
-          <div className="input-group topbar-search">
-            <span className="input-group-text bg-white">
-              <Search size={16} />
-            </span>
-            <input className="form-control" placeholder="Tìm kiếm nhanh..." />
-          </div>
-          <button className="btn btn-light btn-sm ms-auto" type="button" aria-label="Thông báo">
-            <Bell size={18} />
-          </button>
-          <button className="btn btn-light btn-sm" type="button" aria-label="Cài đặt">
-            <Settings size={18} />
-          </button>
-          <div className="d-flex align-items-center gap-2">
+          <div className="ms-auto d-flex align-items-center gap-2">
             <div className="text-end d-none d-sm-block">
-              <strong className="small">{user?.full_name || user?.username || "Admin Nguyễn"}</strong>
-              <small className="d-block text-secondary">{user?.role || "SUPER ADMIN"}</small>
+              <strong className="small">{user?.full_name || user?.username}</strong>
+              <small className="d-block text-secondary text-uppercase">{user?.role}</small>
             </div>
             <UserRound size={30} className="text-primary" />
           </div>

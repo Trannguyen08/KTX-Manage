@@ -2,6 +2,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from apps.core.permissions import IsAdminUser
 from apps.core.services import apply_search
 
 from .serializers import RoomSerializer
@@ -10,6 +11,7 @@ from .services import RoomService
 
 class RoomViewSet(ModelViewSet):
     serializer_class = RoomSerializer
+    permission_classes = [IsAdminUser]
 
     def get_queryset(self):
         queryset = RoomService.queryset()

@@ -1,0 +1,1194 @@
+============================================================
+PLANTUML DIAGRAMS - HE THONG QUAN LY KY TUC XA (KTX-Manage)
+============================================================
+
+Ghi chu:
+- Moi khoi @startuml ... @enduml co the copy rieng vao PlantUML.
+- Cac so do duoc tong hop tu frontend routes va backend API hien co:
+  auth, dang ky KTX, toa/tang/phong, sinh vien, thong bao,
+  vi pham, su co, the, dich vu, hoa don, dashboard.
+
+============================================================
+1. USE CASE TONG QUAT
+============================================================
+
+@startuml UC_00_TongQuat
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Khach/Thi sinh" as Guest
+actor "Sinh vien" as Student
+actor "Quan tri vien" as Admin
+actor "Cong thanh toan PayOS" as PayOS
+actor "Email Service" as Email
+actor "Cloudinary" as Cloudinary
+
+rectangle "He thong quan ly KTX" {
+  usecase "Dang nhap" as UC_Login
+  usecase "Doi mat khau" as UC_ChangePassword
+  usecase "Xem dashboard" as UC_Dashboard
+
+  usecase "Dang ky o KTX" as UC_Register
+  usecase "Thanh toan phi dang ky" as UC_RegPayment
+  usecase "Duyet/Tu choi ho so" as UC_ApproveReg
+
+  usecase "Quan ly toa nha, tang" as UC_Building
+  usecase "Quan ly phong" as UC_Room
+  usecase "Quan ly sinh vien" as UC_Student
+
+  usecase "Quan ly thong bao" as UC_Announcement
+  usecase "Doc/Danh dau thong bao" as UC_ReadAnnouncement
+
+  usecase "Quan ly dich vu" as UC_Service
+  usecase "Dang ky/Huy dich vu" as UC_Subscription
+
+  usecase "Tinh tien va tao hoa don" as UC_GenerateInvoice
+  usecase "Quan ly hoa don" as UC_Invoice
+  usecase "Xem hoa don" as UC_ViewInvoice
+
+  usecase "Quan ly su co" as UC_IncidentAdmin
+  usecase "Bao cao su co" as UC_ReportIncident
+
+  usecase "Quan ly vi pham" as UC_ViolationAdmin
+  usecase "Bao cao/Xem vi pham" as UC_ReportViolation
+
+  usecase "Quan ly the KTX/the xe" as UC_CardAdmin
+  usecase "Yeu cau cap/gia han/cap lai the" as UC_CardRequest
+  usecase "Xem ho so ca nhan" as UC_Profile
+}
+
+Guest --> UC_Register
+Guest --> UC_RegPayment
+Guest --> UC_Login
+
+Student --> UC_Login
+Student --> UC_ChangePassword
+Student --> UC_Dashboard
+Student --> UC_ReadAnnouncement
+Student --> UC_Subscription
+Student --> UC_ViewInvoice
+Student --> UC_ReportIncident
+Student --> UC_ReportViolation
+Student --> UC_CardRequest
+Student --> UC_Profile
+
+Admin --> UC_Login
+Admin --> UC_ChangePassword
+Admin --> UC_Dashboard
+Admin --> UC_ApproveReg
+Admin --> UC_Building
+Admin --> UC_Room
+Admin --> UC_Student
+Admin --> UC_Announcement
+Admin --> UC_Service
+Admin --> UC_GenerateInvoice
+Admin --> UC_Invoice
+Admin --> UC_IncidentAdmin
+Admin --> UC_ViolationAdmin
+Admin --> UC_CardAdmin
+
+UC_Register ..> UC_RegPayment : include
+UC_ApproveReg ..> UC_Student : tao/cap nhat SV
+UC_GenerateInvoice ..> UC_Invoice : tao hoa don
+UC_CardAdmin ..> UC_CardRequest : xu ly yeu cau
+PayOS --> UC_RegPayment
+Cloudinary --> UC_Register
+Email --> UC_ApproveReg
+@enduml
+
+============================================================
+2. USE CASE CHI TIET
+============================================================
+
+@startuml UC_01_XacThuc
+left to right direction
+actor "Nguoi dung" as User
+actor "Sinh vien" as Student
+actor "Quan tri vien" as Admin
+
+rectangle "Xac thuc va phan quyen" {
+  usecase "Dang nhap bang username/password" as Login
+  usecase "Nhan access token va refresh token" as Token
+  usecase "Dieu huong theo vai tro" as Redirect
+  usecase "Truy cap khu admin" as AdminArea
+  usecase "Truy cap khu sinh vien" as StudentArea
+  usecase "Dang xuat" as Logout
+  usecase "Doi mat khau" as ChangePassword
+  usecase "Kiem tra mat khau hien tai" as CheckCurrent
+  usecase "Validate mat khau moi" as ValidateNew
+}
+
+User --> Login
+Login ..> Token : include
+Login ..> Redirect : include
+Redirect ..> AdminArea : neu role admin
+Redirect ..> StudentArea : neu role student
+Admin --> AdminArea
+Student --> StudentArea
+Student --> ChangePassword
+Admin --> ChangePassword
+ChangePassword ..> CheckCurrent : include
+ChangePassword ..> ValidateNew : include
+User --> Logout
+@enduml
+
+@startuml UC_02_DangKyKTX
+left to right direction
+actor "Khach/Thi sinh" as Guest
+actor "PayOS" as PayOS
+actor "Cloudinary" as Cloudinary
+
+rectangle "Dang ky noi tru cong khai" {
+  usecase "Xem danh sach toa/tang/phong con cho" as RoomOptions
+  usecase "Loc phong theo toa, tang, tu khoa" as FilterRoom
+  usecase "Nhap thong tin ca nhan" as Personal
+  usecase "Nhap thong tin hoc tap" as Academic
+  usecase "Nhap thong tin nguoi than" as Guardian
+  usecase "Chon phong/giuong" as SelectRoom
+  usecase "Tai anh chan dung" as UploadPortrait
+  usecase "Tao ho so dang ky" as CreateRegistration
+  usecase "Tao link/QR thanh toan" as CreatePayment
+  usecase "Xac nhan thanh toan" as ConfirmPayment
+  usecase "Nhan webhook thanh toan" as Webhook
+}
+
+Guest --> RoomOptions
+RoomOptions ..> FilterRoom : extend
+Guest --> Personal
+Guest --> Academic
+Guest --> Guardian
+Guest --> SelectRoom
+Guest --> UploadPortrait
+UploadPortrait --> Cloudinary
+Guest --> CreateRegistration
+CreateRegistration ..> Personal : include
+CreateRegistration ..> Academic : include
+CreateRegistration ..> Guardian : include
+CreateRegistration ..> SelectRoom : include
+CreateRegistration ..> UploadPortrait : optional
+CreateRegistration ..> CreatePayment : include
+CreatePayment --> PayOS
+PayOS --> ConfirmPayment
+PayOS --> Webhook
+ConfirmPayment ..> CreateRegistration : cap nhat payment_paid/pending_approval
+Webhook ..> ConfirmPayment : alternative
+@enduml
+
+@startuml UC_03_DuyetHoSo
+left to right direction
+actor "Quan tri vien" as Admin
+actor "Email Service" as Email
+
+rectangle "Duyet dang ky KTX" {
+  usecase "Xem danh sach ho so" as List
+  usecase "Loc theo trang thai" as Filter
+  usecase "Xem chi tiet ho so" as Detail
+  usecase "Duyet ho so da thanh toan" as Approve
+  usecase "Tao tai khoan sinh vien" as CreateUser
+  usecase "Tao/cap nhat ho so sinh vien" as UpsertStudent
+  usecase "Cap phong va cap nhat si so" as UpdateRoom
+  usecase "Gui email thong bao tai khoan" as SendApproved
+  usecase "Tu choi ho so" as Reject
+  usecase "Nhap ly do tu choi" as RejectReason
+  usecase "Gui email tu choi" as SendRejected
+}
+
+Admin --> List
+List ..> Filter : extend
+Admin --> Detail
+Admin --> Approve
+Approve ..> CreateUser : include
+Approve ..> UpsertStudent : include
+Approve ..> UpdateRoom : include
+Approve ..> SendApproved : include
+SendApproved --> Email
+Admin --> Reject
+Reject ..> RejectReason : include
+Reject ..> SendRejected : include
+SendRejected --> Email
+@enduml
+
+@startuml UC_04_CoSoVatChat
+left to right direction
+actor "Quan tri vien" as Admin
+
+rectangle "Quan ly co so vat chat" {
+  usecase "Xem dashboard tong hop" as Dashboard
+  usecase "Xem thong ke toa/phong/sinh vien" as Summary
+  usecase "Quan ly toa nha" as Building
+  usecase "Them/Sua toa nha" as CUBuilding
+  usecase "Ngung kich hoat/Luu tru toa nha" as ArchiveBuilding
+  usecase "Quan ly tang" as Floor
+  usecase "Them/Sua/Xoa tang" as CUDFloor
+  usecase "Quan ly phong" as Room
+  usecase "Them/Sua/Xoa phong" as CUDRoom
+  usecase "Tim kiem phong/toa" as Search
+  usecase "Theo doi suc chua va trang thai phong" as Occupancy
+}
+
+Admin --> Dashboard
+Dashboard ..> Summary : include
+Admin --> Building
+Building ..> CUBuilding : include
+Building ..> ArchiveBuilding : include
+Admin --> Floor
+Floor ..> CUDFloor : include
+Admin --> Room
+Room ..> CUDRoom : include
+Room ..> Search : extend
+Room ..> Occupancy : include
+@enduml
+
+@startuml UC_05_SinhVien
+left to right direction
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+
+rectangle "Quan ly va tu phuc vu sinh vien" {
+  usecase "Xem danh sach sinh vien" as ListStudent
+  usecase "Loc theo MSSV, ho ten, khoa, nganh, lop, gioi tinh, trang thai" as FilterStudent
+  usecase "Them/Sua/Xoa ho so sinh vien" as CUDStudent
+  usecase "Gan phong cho sinh vien" as AssignRoom
+  usecase "Xem thong ke sinh vien" as StudentSummary
+  usecase "Xem ho so ca nhan" as MyProfile
+  usecase "Cap nhat thong tin ca nhan duoc phep" as UpdateProfile
+  usecase "Doi mat khau" as ChangePassword
+}
+
+Admin --> ListStudent
+ListStudent ..> FilterStudent : extend
+Admin --> CUDStudent
+CUDStudent ..> AssignRoom : extend
+Admin --> StudentSummary
+Student --> MyProfile
+Student --> UpdateProfile
+Student --> ChangePassword
+@enduml
+
+@startuml UC_06_ThongBao
+left to right direction
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+
+rectangle "Thong bao" {
+  usecase "Tao thong bao" as Create
+  usecase "Luu ban nhap" as Draft
+  usecase "Dang thong bao" as Publish
+  usecase "Chon doi tuong: tat ca/sinh vien/theo toa" as Target
+  usecase "Danh dau khan cap" as Urgent
+  usecase "Sua thong bao" as Update
+  usecase "Luu tru thong bao" as Archive
+  usecase "Loc/tim kiem thong bao" as Filter
+  usecase "Xem thong bao da phu hop voi minh" as View
+  usecase "Xem so thong bao chua doc" as Unread
+  usecase "Danh dau da doc/chua doc" as MarkRead
+}
+
+Admin --> Create
+Create ..> Draft : extend
+Create ..> Publish : extend
+Create ..> Target : include
+Create ..> Urgent : extend
+Admin --> Update
+Update ..> Publish : extend
+Admin --> Archive
+Admin --> Filter
+Student --> View
+View ..> Target : include
+Student --> Unread
+Student --> MarkRead
+@enduml
+
+@startuml UC_07_DichVu
+left to right direction
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+
+rectangle "Dich vu va dang ky dich vu" {
+  usecase "Quan ly danh muc dich vu" as ServiceCatalog
+  usecase "Them/Sua dich vu" as CUSvc
+  usecase "Ngung kich hoat dich vu" as DisableSvc
+  usecase "Cau hinh don vi, gia, chu ky tinh phi" as PriceCycle
+  usecase "Xem danh sach dich vu kha dung" as ViewSvc
+  usecase "Dang ky dich vu" as Subscribe
+  usecase "Chan dang ky trung dich vu dang pending/active" as PreventDuplicate
+  usecase "Huy dich vu" as CancelOwn
+  usecase "Quan ly yeu cau dang ky dich vu" as ManageSub
+  usecase "Kich hoat dich vu" as Activate
+  usecase "Hoan thanh dich vu" as Complete
+  usecase "Huy dang ky dich vu" as CancelAdmin
+}
+
+Admin --> ServiceCatalog
+ServiceCatalog ..> CUSvc : include
+ServiceCatalog ..> DisableSvc : include
+ServiceCatalog ..> PriceCycle : include
+Student --> ViewSvc
+Student --> Subscribe
+Subscribe ..> PreventDuplicate : include
+Student --> CancelOwn
+Admin --> ManageSub
+ManageSub ..> Activate : include
+ManageSub ..> Complete : include
+ManageSub ..> CancelAdmin : include
+@enduml
+
+@startuml UC_08_HoaDon
+left to right direction
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+
+rectangle "Hoa don va tinh tien" {
+  usecase "Xem du lieu chuan bi tinh tien theo phong" as BillingPrep
+  usecase "Nhap ky thang/nam" as Period
+  usecase "Nhap chi so dien/nuoc" as UtilityReading
+  usecase "Tinh tien phong" as RoomCost
+  usecase "Tinh tien dien/nuoc" as UtilityCost
+  usecase "Tinh tien dich vu" as ServiceCost
+  usecase "Tao hoa don" as Generate
+  usecase "Xem danh sach hoa don" as ListInvoice
+  usecase "Loc hoa don theo thang/nam/trang thai/phong" as FilterInvoice
+  usecase "Cap nhat trang thai hoa don" as UpdateStatus
+  usecase "Xoa hoa don" as DeleteInvoice
+  usecase "Xem hoa don cua phong minh" as ViewOwnInvoice
+}
+
+Admin --> BillingPrep
+Admin --> Generate
+Generate ..> Period : include
+Generate ..> UtilityReading : include
+Generate ..> RoomCost : include
+Generate ..> UtilityCost : include
+Generate ..> ServiceCost : include
+Admin --> ListInvoice
+ListInvoice ..> FilterInvoice : extend
+Admin --> UpdateStatus
+Admin --> DeleteInvoice
+Student --> ViewOwnInvoice
+ViewOwnInvoice ..> FilterInvoice : extend
+@enduml
+
+@startuml UC_09_SuCoVaViPham
+left to right direction
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+
+rectangle "Su co" {
+  usecase "Sinh vien bao cao su co" as ReportIncident
+  usecase "Gan phong theo sinh vien dang nhap" as AutoRoom
+  usecase "Xem su co cua minh" as ViewOwnIncident
+  usecase "Quan ly danh sach su co" as ManageIncident
+  usecase "Loc theo trang thai, loai, muc uu tien" as FilterIncident
+  usecase "Cap nhat muc uu tien/trang thai" as UpdateIncident
+  usecase "Xu ly su co va ghi chu admin" as ResolveIncident
+}
+
+rectangle "Vi pham" {
+  usecase "Sinh vien bao cao vi pham" as ReportViolation
+  usecase "Xem vi pham lien quan den minh" as ViewOwnViolation
+  usecase "Quan ly danh sach vi pham" as ManageViolation
+  usecase "Loc theo sinh vien, trang thai, muc do" as FilterViolation
+  usecase "Cap nhat trang thai/muc phat" as UpdateViolation
+  usecase "Xu ly vi pham" as ResolveViolation
+}
+
+Student --> ReportIncident
+ReportIncident ..> AutoRoom : include
+Student --> ViewOwnIncident
+Admin --> ManageIncident
+ManageIncident ..> FilterIncident : extend
+Admin --> UpdateIncident
+Admin --> ResolveIncident
+
+Student --> ReportViolation
+Student --> ViewOwnViolation
+Admin --> ManageViolation
+ManageViolation ..> FilterViolation : extend
+Admin --> UpdateViolation
+Admin --> ResolveViolation
+@enduml
+
+@startuml UC_10_The
+left to right direction
+actor "Sinh vien" as Student
+actor "Quan tri vien" as Admin
+
+rectangle "The KTX va the xe" {
+  usecase "Xem the cua minh" as MyCards
+  usecase "Gui yeu cau cap moi/cap lai/gia han the" as RequestCard
+  usecase "Nhap loai the va ly do" as RequestInfo
+  usecase "Theo doi trang thai yeu cau" as TrackRequest
+  usecase "Xem tat ca the" as AllCards
+  usecase "Xem yeu cau cap the" as AllRequests
+  usecase "Cap the theo yeu cau" as Issue
+  usecase "Tu sinh ma the neu khong nhap" as AutoCardNo
+  usecase "Khoa the cu khi cap lai" as LockOld
+  usecase "Tu choi yeu cau" as Reject
+  usecase "Ghi chu admin" as AdminNote
+}
+
+Student --> MyCards
+Student --> RequestCard
+RequestCard ..> RequestInfo : include
+Student --> TrackRequest
+Admin --> AllCards
+Admin --> AllRequests
+Admin --> Issue
+Issue ..> AutoCardNo : extend
+Issue ..> LockOld : extend
+Issue ..> AdminNote : extend
+Admin --> Reject
+Reject ..> AdminNote : include
+@enduml
+
+============================================================
+3. SEQUENCE DIAGRAMS
+============================================================
+
+@startuml SQ_01_DangNhap
+actor "Nguoi dung" as User
+participant "React LoginPage" as FE
+participant "authApi/httpClient" as API
+participant "LoginView" as BE
+database "User DB" as DB
+
+User -> FE: Nhap username/password, chon vai tro
+FE -> API: POST /api/auth/login/
+API -> BE: credentials
+BE -> DB: authenticate(username, password)
+alt Hop le
+  DB --> BE: User
+  BE -> BE: Tao JWT access + refresh
+  BE --> API: token, refresh, role, user info
+  API --> FE: user
+  FE -> FE: Luu auth_user, auth_token, auth_refresh
+  FE --> User: Dieu huong /admin hoac /student
+else Khong hop le
+  DB --> BE: None
+  BE --> API: 400 detail
+  API --> FE: Loi
+  FE --> User: Hien thong bao loi
+end
+@enduml
+
+@startuml SQ_02_DangKyVaThanhToan
+actor "Khach/Thi sinh" as Guest
+participant "RegistrationPage" as FE
+participant "Registration API" as API
+participant "DormitoryRegistrationViewSet" as REG
+participant "Cloudinary" as Cloudinary
+participant "PayOSService" as PayOSService
+participant "PayOS" as PayOS
+database "DB" as DB
+
+Guest -> FE: Mo /register/step1
+FE -> API: GET /api/registrations/room-options/
+API -> REG: room_options()
+REG -> DB: Lay toa/tang/phong con cho
+REG --> API: options
+API --> FE: Danh sach phong
+Guest -> FE: Nhap thong tin + chon phong + anh
+opt Co anh chan dung
+  FE -> API: POST /api/registrations/upload-portrait/
+  API -> REG: upload_portrait(file)
+  REG -> Cloudinary: upload(file)
+  Cloudinary --> REG: portrait_url
+  REG --> FE: portrait_url
+end
+Guest -> FE: Xac nhan dang ky va thanh toan
+FE -> API: POST /api/registrations/create-payment/
+API -> REG: create_payment(registration, amount)
+REG -> DB: Tao DormitoryRegistration(awaiting_payment)
+REG -> PayOSService: create_payment_link()
+PayOSService -> PayOS: Tao checkout URL/QR
+PayOS --> PayOSService: payment link
+PayOSService -> DB: Luu RegistrationPayment
+REG --> API: registration, payment, checkout_url
+API --> FE: checkout_url
+FE --> Guest: Chuyen sang PayOS
+@enduml
+
+@startuml SQ_03_XacNhanThanhToan
+actor "PayOS" as PayOS
+actor "Khach/Thi sinh" as Guest
+participant "PaymentSuccessPage" as FE
+participant "Registration API" as API
+participant "DormitoryRegistrationViewSet" as REG
+participant "PayOSService" as Service
+database "DB" as DB
+
+alt Redirect ve trang thanh cong
+  PayOS -> Guest: Redirect /payment/success?orderCode=...
+  Guest -> FE: Mo trang thanh cong
+  FE -> API: POST /api/registrations/confirm-payment/
+  API -> REG: confirm_payment(orderCode, status)
+else Webhook PayOS
+  PayOS -> API: POST /api/registrations/payos-webhook/
+  API -> REG: payos_webhook(payload)
+end
+REG -> Service: mark_paid(orderCode, payload)
+Service -> DB: Cap nhat payment=PAID
+Service -> DB: Cap nhat registration=pending_approval
+DB --> Service: OK
+Service --> REG: payment
+REG --> API: registration + payment
+API --> FE: Ket qua
+FE --> Guest: Huong dan cho nha truong duyet
+@enduml
+
+@startuml SQ_04_DuyetHoSo
+actor "Quan tri vien" as Admin
+participant "RegistrationApprovalsPage" as FE
+participant "registrationApi" as API
+participant "DormitoryRegistrationViewSet" as REG
+database "DB" as DB
+participant "Email Service" as Email
+
+Admin -> FE: Xem danh sach ho so
+FE -> API: GET /api/registrations/
+API -> REG: list()
+REG -> DB: Lay ho so
+DB --> REG: Danh sach
+REG --> FE: Ho so
+Admin -> FE: Bam Duyet ho so
+FE -> API: POST /api/registrations/{id}/approve/
+API -> REG: approve()
+REG -> DB: Kiem tra status=pending_approval
+alt Hop le
+  REG -> DB: Tao/cap nhat User
+  REG -> DB: Tao/cap nhat Student active
+  REG -> DB: Cap nhat current_occupancy va status phong
+  REG -> DB: Cap nhat registration=approved
+  REG -> Email: Gui email tai khoan va mat khau
+  REG --> FE: Ho so da duyet
+  FE --> Admin: Cap nhat bang va thong bao
+else Khong hop le
+  REG --> FE: 400 Ho so chua san sang
+  FE --> Admin: Hien loi
+end
+@enduml
+
+@startuml SQ_05_TuChoiHoSo
+actor "Quan tri vien" as Admin
+participant "RegistrationApprovalsPage" as FE
+participant "registrationApi" as API
+participant "DormitoryRegistrationViewSet" as REG
+database "DB" as DB
+participant "Email Service" as Email
+
+Admin -> FE: Chon ho so va nhap ly do tu choi
+FE -> API: POST /api/registrations/{id}/reject/
+API -> REG: reject(reason)
+REG -> DB: Kiem tra status pending_approval/awaiting_payment
+alt Co the tu choi
+  REG -> DB: Cap nhat status=rejected, note=reason
+  REG -> Email: Gui email tu choi
+  REG --> FE: Ho so rejected
+  FE --> Admin: Cap nhat danh sach
+else Khong hop le
+  REG --> FE: 400
+  FE --> Admin: Hien loi
+end
+@enduml
+
+@startuml SQ_06_TaoThongBaoVaSinhVienDoc
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+participant "AnnouncementsPage" as AdminFE
+participant "StudentAnnouncements" as StudentFE
+participant "AnnouncementViewSet" as BE
+database "DB" as DB
+
+Admin -> AdminFE: Tao thong bao, chon doi tuong
+AdminFE -> BE: POST /api/announcements/
+BE -> DB: Luu Announcement
+DB --> BE: OK
+BE --> AdminFE: Thong bao moi
+
+Student -> StudentFE: Mo trang thong bao
+StudentFE -> BE: GET /api/announcements/
+BE -> DB: Lay published, loc target theo sinh vien/toa
+BE -> DB: Annotate user_read
+DB --> BE: Danh sach phu hop
+BE --> StudentFE: Thong bao
+Student -> StudentFE: Tick da doc
+StudentFE -> BE: POST /api/announcements/{id}/mark-read/
+BE -> DB: Tao AnnouncementRead
+BE --> StudentFE: Thong bao cap nhat
+@enduml
+
+@startuml SQ_07_SinhVienCapNhatHoSoVaDoiMatKhau
+actor "Sinh vien" as Student
+participant "StudentProfile" as FE
+participant "httpClient" as API
+participant "StudentViewSet" as StudentBE
+participant "ChangePasswordView" as PasswordBE
+database "DB" as DB
+
+Student -> FE: Mo ho so ca nhan
+FE -> API: GET /api/students/me/
+API -> StudentBE: me()
+StudentBE -> DB: Lay student_profile cua user
+StudentBE --> FE: Ho so
+Student -> FE: Sua thong tin duoc phep
+FE -> API: PATCH /api/students/me/
+API -> StudentBE: me(PATCH)
+StudentBE -> DB: Luu thay doi
+StudentBE --> FE: Ho so moi
+Student -> FE: Doi mat khau
+FE -> API: POST /api/auth/change-password/
+API -> PasswordBE: current_password, new_password
+PasswordBE -> DB: check_password + validate_password
+alt Hop le
+  PasswordBE -> DB: set_password()
+  PasswordBE --> FE: Thanh cong
+else Loi
+  PasswordBE --> FE: 400 detail
+end
+@enduml
+
+@startuml SQ_08_DangKyDichVu
+actor "Sinh vien" as Student
+participant "StudentServices" as FE
+participant "ServiceSubscriptionViewSet" as BE
+database "DB" as DB
+
+Student -> FE: Xem dich vu
+FE -> BE: GET /api/services/
+BE -> DB: Lay dich vu active
+BE --> FE: Danh sach dich vu
+FE -> BE: GET /api/subscriptions/
+BE -> DB: Lay subscription cua sinh vien
+BE --> FE: Danh sach dang ky
+Student -> FE: Bam Dang ky dich vu
+FE -> BE: POST /api/subscriptions/ {service}
+BE -> DB: Lay student_profile va service
+BE -> DB: Kiem tra dang ky trung pending/active
+alt Chua trung
+  BE -> DB: Tao ServiceSubscription pending, is_active=false
+  BE --> FE: Subscription moi
+  FE --> Student: Cap nhat man hinh
+else Trung hoac loi
+  BE --> FE: 400 detail
+  FE --> Student: Hien loi
+end
+@enduml
+
+@startuml SQ_09_AdminXuLyDichVu
+actor "Quan tri vien" as Admin
+participant "ServicesPage" as FE
+participant "ServiceSubscriptionViewSet" as BE
+database "DB" as DB
+
+Admin -> FE: Xem danh sach dang ky dich vu
+FE -> BE: GET /api/subscriptions/
+BE -> DB: Lay tat ca subscriptions
+BE --> FE: Danh sach
+alt Kich hoat
+  Admin -> FE: Bam Dang su dung
+  FE -> BE: POST /api/subscriptions/{id}/activate/
+  BE -> DB: status=active, is_active=true
+else Hoan thanh
+  Admin -> FE: Bam Da su dung
+  FE -> BE: POST /api/subscriptions/{id}/complete/
+  BE -> DB: status=completed, is_active=false, end_date=today
+else Huy
+  Admin -> FE: Bam Huy
+  FE -> BE: POST /api/subscriptions/{id}/cancel/
+  BE -> DB: status=cancelled, is_active=false, end_date=today
+end
+BE --> FE: Subscription cap nhat
+FE --> Admin: Refresh danh sach
+@enduml
+
+@startuml SQ_10_TaoHoaDon
+actor "Quan tri vien" as Admin
+participant "InvoicesPage" as FE
+participant "InvoiceViewSet" as BE
+participant "InvoiceService" as Service
+database "DB" as DB
+
+Admin -> FE: Mo man hinh tinh tien
+FE -> BE: GET /api/invoices/billing-preparation/
+BE -> Service: get_room_billing_data()
+Service -> DB: Lay phong, sinh vien, dich vu lien quan
+Service --> BE: Du lieu theo phong
+BE --> FE: Danh sach phong can tinh tien
+Admin -> FE: Nhap thang/nam, dien, nuoc, han thanh toan
+FE -> BE: POST /api/invoices/generate/
+BE -> Service: create_invoice(room_id, month, year, readings, due_date)
+Service -> DB: Kiem tra hoa don trung ky
+Service -> DB: Tinh tien phong, dien, nuoc, dich vu
+Service -> DB: Tao Invoice va InvoiceItem
+alt Thanh cong
+  Service --> BE: Invoice
+  BE --> FE: 201 Invoice
+  FE --> Admin: Dong modal, thong bao thanh cong
+else Du lieu loi/trung
+  Service --> BE: ValueError
+  BE --> FE: 400 error
+  FE --> Admin: Hien loi
+end
+@enduml
+
+@startuml SQ_11_QuanLyHoaDonVaSinhVienXem
+actor "Quan tri vien" as Admin
+actor "Sinh vien" as Student
+participant "InvoiceManagementPage" as AdminFE
+participant "StudentInvoices" as StudentFE
+participant "InvoiceViewSet" as BE
+database "DB" as DB
+
+Admin -> AdminFE: Loc hoa don theo thang/nam/trang thai/phong
+AdminFE -> BE: GET /api/invoices/?month=&year=&status=&room_code=
+BE -> DB: Lay tat ca hoa don theo filter
+BE --> AdminFE: Danh sach hoa don
+Admin -> AdminFE: Danh dau da thanh toan
+AdminFE -> BE: PATCH /api/invoices/{id}/ {status: paid}
+BE -> DB: Cap nhat status
+BE --> AdminFE: Hoa don moi
+
+Student -> StudentFE: Xem hoa don theo thang/nam
+StudentFE -> BE: GET /api/invoices/?month=&year=
+BE -> DB: Chi lay invoice cua phong co student.user=request.user
+BE --> StudentFE: Hoa don cua sinh vien
+@enduml
+
+@startuml SQ_12_BaoCaoSuCo
+actor "Sinh vien" as Student
+actor "Quan tri vien" as Admin
+participant "StudentReports" as StudentFE
+participant "IncidentsPage" as AdminFE
+participant "IncidentViewSet" as BE
+database "DB" as DB
+
+Student -> StudentFE: Tao bao cao su co
+StudentFE -> BE: POST /api/incidents/
+BE -> DB: Lay student_profile va room cua sinh vien
+BE -> DB: Tao Incident pending
+BE --> StudentFE: Incident moi
+
+Admin -> AdminFE: Xem danh sach su co
+AdminFE -> BE: GET /api/incidents/
+BE -> DB: Lay tat ca su co, loc neu co
+BE --> AdminFE: Danh sach
+Admin -> AdminFE: Cap nhat priority/status hoac xu ly
+alt Cap nhat nhanh
+  AdminFE -> BE: PATCH /api/incidents/{id}/
+  BE -> DB: Luu priority/status/admin_note
+else Resolve
+  AdminFE -> BE: POST /api/incidents/{id}/resolve/
+  BE -> DB: status=resolved, resolved_at=now, admin_note
+end
+BE --> AdminFE: Incident cap nhat
+@enduml
+
+@startuml SQ_13_BaoCaoVaXuLyViPham
+actor "Sinh vien" as Student
+actor "Quan tri vien" as Admin
+participant "StudentReports" as StudentFE
+participant "ViolationsPage" as AdminFE
+participant "ViolationViewSet" as BE
+database "DB" as DB
+
+Student -> StudentFE: Gui bao cao vi pham
+StudentFE -> BE: POST /api/violations/
+BE -> DB: Gan student=request.user.student_profile
+BE -> DB: Tao Violation pending
+BE --> StudentFE: Violation moi
+
+Admin -> AdminFE: Xem/loc vi pham
+AdminFE -> BE: GET /api/violations/?status=&level=&student_id=
+BE -> DB: Lay vi pham theo filter
+BE --> AdminFE: Danh sach
+Admin -> AdminFE: Cap nhat muc phat/trang thai
+AdminFE -> BE: PATCH /api/violations/{id}/
+BE -> DB: Luu thay doi
+BE --> AdminFE: Violation cap nhat
+Admin -> AdminFE: Xu ly vi pham
+AdminFE -> BE: POST /api/violations/{id}/resolve/
+BE -> DB: status=resolved, penalty, notes
+BE --> AdminFE: Violation resolved
+@enduml
+
+@startuml SQ_14_YeuCauVaCapThe
+actor "Sinh vien" as Student
+actor "Quan tri vien" as Admin
+participant "StudentCards" as StudentFE
+participant "AdminCardsPage" as AdminFE
+participant "CardRequestViewSet" as ReqBE
+database "DB" as DB
+
+Student -> StudentFE: Xem the va yeu cau
+StudentFE -> ReqBE: GET /api/cards/
+ReqBE -> DB: Lay the cua sinh vien
+ReqBE --> StudentFE: Cards
+StudentFE -> ReqBE: GET /api/card-requests/
+ReqBE -> DB: Lay yeu cau cua sinh vien
+ReqBE --> StudentFE: Requests
+Student -> StudentFE: Tao yeu cau cap/cap lai/gia han
+StudentFE -> ReqBE: POST /api/card-requests/
+ReqBE -> DB: Gan student=request.user.student_profile
+ReqBE -> DB: Tao CardRequest pending
+ReqBE --> StudentFE: Request moi
+
+Admin -> AdminFE: Xem yeu cau cap the
+AdminFE -> ReqBE: GET /api/card-requests/
+ReqBE -> DB: Lay tat ca request
+ReqBE --> AdminFE: Requests
+alt Cap the
+  Admin -> AdminFE: Nhap ma the/ghi chu va cap
+  AdminFE -> ReqBE: POST /api/card-requests/{id}/issue/
+  ReqBE -> DB: Kiem tra quyen admin, status, expiry_date, ma the trung
+  opt Cap lai
+    ReqBE -> DB: Khoa the active cu cung loai
+  end
+  ReqBE -> DB: Tao Card active
+  ReqBE -> DB: CardRequest status=completed
+  ReqBE --> AdminFE: Request + Card
+else Tu choi
+  Admin -> AdminFE: Nhap ly do
+  AdminFE -> ReqBE: PATCH /api/card-requests/{id}/ {status: rejected, admin_note}
+  ReqBE -> DB: Cap nhat request
+  ReqBE --> AdminFE: Request rejected
+end
+@enduml
+
+@startuml SQ_15_DashboardAdmin
+actor "Quan tri vien" as Admin
+participant "DashboardPage" as FE
+participant "dashboard_summary" as BE
+database "DB" as DB
+
+Admin -> FE: Mo /admin/dashboard
+FE -> BE: GET /api/dashboard/summary/
+BE -> DB: Dem sinh vien active/pending
+BE -> DB: Tong hop phong, suc chua, ti le lap day
+BE -> DB: Dem thong bao published/urgent
+BE -> DB: Dem dich vu active
+BE -> DB: Dem ho so cho duyet, su co, vi pham, hoa don pending
+BE -> DB: Lay hoat dong gan day tu dang ky/su co/vi pham
+BE --> FE: JSON summary
+FE --> Admin: Hien thong ke va hoat dong gan day
+@enduml
+
+============================================================
+4. ACTIVITY DIAGRAMS
+============================================================
+
+@startuml AC_01_DangNhapVaDieuHuong
+start
+:Nguoi dung nhap tai khoan/mat khau;
+:Gui POST /auth/login/;
+if (Thong tin hop le?) then (Co)
+  :Nhan token, refresh, role;
+  :Luu localStorage;
+  if (Role admin?) then (Co)
+    :Dieu huong /admin/dashboard;
+  else (Khong)
+    :Dieu huong /student/dashboard;
+  endif
+else (Khong)
+  :Hien thong bao loi dang nhap;
+endif
+stop
+@enduml
+
+@startuml AC_02_DangKyKTX
+start
+:Mo trang dang ky;
+:Tai room-options;
+:Nhap thong tin ca nhan, hoc tap, nguoi than;
+:Chon phong/giuong;
+if (Co anh chan dung?) then (Co)
+  :Upload anh len Cloudinary;
+  :Nhan portrait_url;
+endif
+:Kiem tra thong tin bat buoc;
+if (Hop le?) then (Co)
+  :Tao registration awaiting_payment;
+  :Tao payment link PayOS;
+  :Chuyen nguoi dang ky den checkout_url;
+else (Khong)
+  :Hien loi va yeu cau bo sung;
+endif
+stop
+@enduml
+
+@startuml AC_03_ThanhToanDangKy
+start
+:Nguoi dang ky thanh toan tren PayOS;
+if (PayOS redirect ve payment/success?) then (Co)
+  :Frontend goi confirm-payment;
+else (Webhook)
+  :PayOS goi payos-webhook;
+endif
+:Tim RegistrationPayment theo orderCode;
+if (Thanh toan thanh cong?) then (Co)
+  :Cap nhat payment=paid;
+  :Cap nhat registration=pending_approval;
+  :Thong bao cho cho duyet;
+else (Khong)
+  :Giu/Cap nhat payment failed/cancelled;
+  :Hien trang thai thanh toan loi;
+endif
+stop
+@enduml
+
+@startuml AC_04_DuyetHoSo
+start
+:Admin mo danh sach dang ky;
+:Chon ho so;
+if (Admin bam Duyet?) then (Duyet)
+  if (Status = pending_approval?) then (Co)
+    :Tao hoac cap nhat User;
+    :Sinh mat khau;
+    :Tao/cap nhat Student active;
+    :Gan phong va tinh lai si so;
+    if (Phong da day?) then (Co)
+      :Dat phong FULL;
+    else (Khong)
+      :Dat phong AVAILABLE;
+    endif
+    :Cap nhat registration approved;
+    :Gui email thong tin tai khoan;
+  else (Khong)
+    :Bao loi ho so chua san sang;
+  endif
+else (Tu choi)
+  :Nhap ly do tu choi;
+  if (Status cho phep tu choi?) then (Co)
+    :Cap nhat registration rejected va note;
+    :Gui email tu choi;
+  else (Khong)
+    :Bao loi khong the tu choi;
+  endif
+endif
+stop
+@enduml
+
+@startuml AC_05_QuanLyPhong
+start
+:Admin vao quan ly phong;
+:Tai danh sach phong;
+:Tim kiem/loc neu can;
+if (Them phong?) then (Co)
+  :Nhap toa/tang, ma phong, suc chua, gia, gioi tinh;
+  :Luu phong moi;
+elseif (Sua phong?) then (Co)
+  :Cap nhat thong tin phong;
+  :Luu thay doi;
+elseif (Xoa phong?) then (Co)
+  :Gui DELETE phong;
+endif
+:He thong tra ve danh sach/trang thai moi;
+:Admin xem suc chua, so nguoi o, trang thai phong;
+stop
+@enduml
+
+@startuml AC_06_ThongBao
+start
+:Admin tao/sua thong bao;
+:Nhap tieu de, noi dung;
+:Chon doi tuong nhan;
+if (Thong bao theo toa?) then (Co)
+  :Chon toa nha;
+endif
+if (Dang ngay?) then (Co)
+  :Dat status=published, published_at;
+else (Ban nhap)
+  :Dat status=draft;
+endif
+:Luu thong bao;
+:Sinh vien mo trang thong bao;
+:He thong chi lay thong bao published phu hop doi tuong/toa;
+if (Sinh vien danh dau da doc?) then (Co)
+  :Tao AnnouncementRead;
+elseif (Danh dau chua doc?) then (Co)
+  :Xoa AnnouncementRead;
+endif
+stop
+@enduml
+
+@startuml AC_07_DangKyDichVu
+start
+:Sinh vien mo dich vu;
+:Tai danh muc dich vu va subscription hien co;
+:Sinh vien chon Dang ky;
+:He thong lay student_profile va service;
+if (Dich vu tinh theo lan/usage?) then (Co)
+  :Cho phep tao nhieu yeu cau;
+else (Khong)
+  :Kiem tra subscription pending/active trung dich vu;
+endif
+if (Bi trung?) then (Co)
+  :Tra loi 400 va hien thong bao;
+else (Khong)
+  :Tao subscription pending, is_active=false;
+  :Hien trang thai cho xu ly;
+endif
+stop
+@enduml
+
+@startuml AC_08_AdminXuLyDichVu
+start
+:Admin mo quan ly dich vu;
+if (Quan ly danh muc?) then (Co)
+  :Them/Sua dich vu;
+  if (Xoa dich vu?) then (Co)
+    :Dat is_active=false;
+  endif
+else (Quan ly subscription)
+  :Xem yeu cau dang ky;
+  if (Kich hoat?) then (Co)
+    :status=active, is_active=true, start_date neu trong;
+  elseif (Hoan thanh?) then (Co)
+    :status=completed, is_active=false, end_date=today;
+  elseif (Huy?) then (Co)
+    if (Da completed?) then (Co)
+      :Bao loi khong the huy;
+    else (Khong)
+      :status=cancelled, is_active=false, end_date=today;
+    endif
+  endif
+endif
+stop
+@enduml
+
+@startuml AC_09_TaoHoaDon
+start
+:Admin mo tinh tien va tao hoa don;
+:He thong lay billing-preparation;
+:Admin chon phong;
+:Nhap thang, nam, chi so dien, chi so nuoc, han thanh toan;
+if (Thieu thong tin?) then (Co)
+  :Bao loi thieu thong tin;
+  stop
+endif
+:Kiem tra hoa don da ton tai cho phong/ky;
+if (Da ton tai?) then (Co)
+  :Bao loi trung hoa don;
+else (Khong)
+  :Tinh tien phong;
+  :Tinh dien/nuoc tu chi so;
+  :Tinh tong dich vu active;
+  :Tao Invoice;
+  :Tao cac InvoiceItem;
+  :Tra ve hoa don moi;
+endif
+stop
+@enduml
+
+@startuml AC_10_QuanLyHoaDon
+start
+:Admin mo danh sach hoa don;
+:Nhap filter thang/nam/trang thai/phong;
+:He thong lay hoa don theo filter;
+if (Cap nhat trang thai?) then (Co)
+  :PATCH status moi;
+  if (status=paid?) then (Co)
+    :Ghi nhan da thanh toan;
+  endif
+elseif (Xoa hoa don?) then (Co)
+  :DELETE invoice;
+endif
+:Sinh vien mo hoa don;
+:He thong chi tra hoa don cua phong sinh vien;
+:Sinh vien xem chi tiet tien phong, dien, nuoc, dich vu;
+stop
+@enduml
+
+@startuml AC_11_BaoCaoSuCo
+start
+:Sinh vien mo Bao cao;
+:Chon loai Su co;
+:Nhap tieu de, mo ta, muc uu tien, khu vuc/anh neu co;
+:Gui POST /incidents/;
+:He thong gan student va room hien tai;
+:Tao su co pending;
+:Admin xem danh sach su co;
+if (Can cap nhat muc uu tien/trang thai?) then (Co)
+  :Admin PATCH su co;
+endif
+if (Xu ly xong?) then (Co)
+  :Admin goi resolve;
+  :Dat status=resolved, resolved_at=now, admin_note;
+endif
+stop
+@enduml
+
+@startuml AC_12_BaoCaoVaXuLyViPham
+start
+:Sinh vien/Admin tao bao cao vi pham;
+if (Nguoi tao la sinh vien?) then (Co)
+  :He thong gan student dang nhap;
+else (Admin)
+  :Admin chon sinh vien vi pham;
+endif
+:Nhap tieu de, mo ta, ngay vi pham, muc do;
+:Tao Violation pending;
+:Admin xem/loc vi pham;
+if (Cap nhat muc phat?) then (Co)
+  :Luu penalty;
+endif
+if (Xu ly?) then (Co)
+  :Dat status=resolved;
+  :Luu penalty va notes;
+endif
+:Sinh vien xem vi pham cua minh;
+stop
+@enduml
+
+@startuml AC_13_YeuCauCapThe
+start
+:Sinh vien mo trang The;
+:Tai danh sach the va yeu cau cua minh;
+:Bam Tao yeu cau;
+:Chon loai the KTX/the xe;
+:Chon cap moi/cap lai/gia han;
+:Nhap ly do;
+:Gui POST /card-requests/;
+:He thong gan student va tao request pending;
+:Sinh vien theo doi trang thai;
+stop
+@enduml
+
+@startuml AC_14_AdminCapThe
+start
+:Admin mo quan ly the;
+:Xem yeu cau pending;
+if (Tu choi?) then (Co)
+  :Nhap ly do;
+  :PATCH request status=rejected, admin_note;
+else (Cap the)
+  :Nhap ma the hoac de trong;
+  :Kiem tra request khong rejected/completed;
+  :Kiem tra sinh vien co expiry_date;
+  if (Khong nhap ma the?) then (Co)
+    :Tu sinh ma KTX-MSSV hoac GX-MSSV;
+  endif
+  :Kiem tra ma the chua ton tai;
+  if (Request la cap lai?) then (Co)
+    :Khoa the active cu cung loai;
+  endif
+  :Tao Card active;
+  :Cap nhat request completed va admin_note;
+endif
+stop
+@enduml
+
+@startuml AC_15_DashboardVaBaoCaoTongHop
+start
+:Admin vao dashboard;
+:Goi /dashboard/summary/;
+:Dem tong sinh vien, active, pending;
+:Tinh tong phong, phong co nguoi, suc chua, ti le lap day;
+:Dem thong bao published/urgent;
+:Dem dich vu active;
+:Dem ho so cho duyet, su co dang xu ly, vi pham pending, hoa don pending;
+:Lay hoat dong gan day tu dang ky/su co/vi pham;
+:Hien cac the thong ke va bang hoat dong;
+stop
+@enduml
+
